@@ -26,6 +26,8 @@ stringtoword:
     mov di,si
     add si,-1
     cmp [si+1],' '
+    je skipspace   
+    cmp [si+1],09h
     je skipspace
     jmp deletetail
 deletetail:
