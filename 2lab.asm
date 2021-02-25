@@ -91,14 +91,18 @@ findsymb:
 compare: 
     inc di 
     cmp [di], 0Dh
-    je delete
+    je comp
+next:
     strend
     mov dl,[si]
     cmp dl, [di]
     je compare 
     mov di, offset word[2]
     jmp skip
-
+comp:
+    cmp [si+1], ' '
+    je delete
+    jne next
 delete:
     strend      
     jmp return
