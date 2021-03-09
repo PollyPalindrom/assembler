@@ -3,7 +3,7 @@
     buf db 200 dup (?)
     firstmessage db "please, enter the string", 0Dh,0Ah,'$'
     secondmessage db 0Dh,0Ah,"please, enter the word you would like to delete:", 0Dh,0Ah,'$'
-    resultmessage db 0Dh,0Ah,"Resut:", 0Dh,0Ah,'$'
+    resultmessage db 0Dh,0Ah,"Result:", 0Dh,0Ah,'$'
     strlength equ 203
     maxlength equ 200
     string db strlength dup('$')
@@ -52,14 +52,16 @@ stwend:
     print
     mov dx, offset word[2]
     print
-    jmp emptystr  
+    jmp emptystr 
+     
 skipspace:
     strend
     cmp [si],' '
     je skipspace
     cmp [si],09h
     je skipspace
-    jmp nextstep2    
+    jmp nextstep2
+        
 emptystr:
     mov ah,[string[1]]
     cmp ah,0
@@ -71,7 +73,7 @@ emptystr:
     
 matchsize:
     cmp ah,al
-    jg findword
+    jge findword
     jmp Result     
     
 findword:
@@ -81,6 +83,8 @@ findword:
 findsymb:
     strend
     cmp [si], ' '
+    je findsymb 
+    cmp [si], 09h
     je findsymb
     mov bx, [si]
     mov dl,[si]
@@ -92,6 +96,8 @@ compare:
     inc di 
     cmp [di], 0Dh
     je comp
+    jmp next
+    
 next:
     strend
     mov dl,[si]
@@ -99,17 +105,24 @@ next:
     je compare 
     mov di, offset word[2]
     jmp skip
+    
 comp:
     cmp [si+1], ' '
+    je delete 
+    cmp [si+1], 0Dh
     je delete
-    jne next
+    cmp [si+1], 09h
+    je delete
+    jmp next
+    
 delete:
     strend      
     jmp return
     cmp [si], ' '
     je nextstep
     cmp [si], 09h
-    je nextstep
+    je nextstep 
+    
 nextstep:   
     mov dl, [si]
     mov [di], dl
@@ -117,7 +130,8 @@ nextstep:
     je emptystr
     inc di
     inc si
-    jmp nextstep  
+    jmp nextstep
+      
 nextstep2:   
     mov dl, [si]
     mov [di], dl
@@ -153,10 +167,21 @@ skip:
     
 strend macro
   inc si
-  cmp [si], '$'
+  cmp [si],'$'
   je Result
-endm          
+endm 
+
+space:
+    inc si
+    cmp [si],'$'
+    jne space 
+    jmp setspace 
     
+setspace:
+    mov dl, 0Dh
+    mov [si], dl 
+    jmp a1
+        
 start:    
    mov ax,@data
    mov ds,ax   
@@ -166,6 +191,9 @@ start:
    print
    mov dx,offset string
    input 
+   mov si, offset string[1] 
+   jmp space
+a1: 
    mov dx,offset secondmessage
    print 
    mov dx,offset word
@@ -178,4 +206,4 @@ Result:
     print 
     mov ax,4c00h
     int 21h
-end start
+end start 
